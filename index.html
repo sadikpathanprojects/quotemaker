@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quote Reel Studio</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #101114;
+  color: white;
+}
+
+header {
+  padding: 16px;
+  text-align: center;
+  border-bottom: 1px solid #333;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.panel {
+  background: #1b1d23;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+h2 {
+  font-size: 15px;
+  color: #c9a7ff;
+}
+
+label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 13px;
+}
+
+textarea, select, input {
+  width: 100%;
+  padding: 9px;
+  border-radius: 7px;
+  border: 1px solid #444;
+  background: #111218;
+  color: white;
+}
+
+input[type="range"] {
+  padding: 0;
+}
+
+input[type="color"] {
+  height: 40px;
+}
+
+button {
+  margin-top: 12px;
+  padding: 11px;
+  border: none;
+  border-radius: 8px;
+  background: #c9a7ff;
+  color: #17121f;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover { opacity: .85; }
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+#stage {
+  width: min(100%, 405px);
+  aspect-ratio: 9 / 16;
+  position: relative;
+  overflow: hidden;
+  background: #292a30;
+  border: 1px solid #555;
+  border-radius: 10px;
+  touch-action: none;
+}
+
+#background {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+  pointer-events: none;
+}
+
+#shade {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.2);
+  pointer-events: none;
+}
+
+#quote {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 82%;
+  font-family: Georgia, serif;
+  font-weight: bold;
+  font-size: 30px;
+  line-height: 1.2;
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: white;
+  text-shadow: 0 2px 10px #000;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+@media (max-width: 700px) {
+  .app { grid-template-columns: 1fr; padding: 10px; }
+  #stage { width: min(100%, 360px); }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Quote Reel Studio</h1>
+  <p>Create your own Instagram quote designs</p>
+</header>
+
+<div class="app">
+  <section class="panel">
+    <h2>Background Image</h2>
+
+    <label>Upload your image</label>
+    <input type="file" id="imageInput" accept="image/*">
+
+    <label>Background darkness</label>
+    <input type="range" id="darkness"
+      min="0" max="80" value="20">
+
+    <h2>Your Quote</h2>
+
+    <label>Write your text</label>
+    <textarea id="textInput" rows="5">Some feelings
+are too deep
+for words.</textarea>
+
+    <label>Font</label>
+    <select id="font">
+      <option value="Georgia, serif">Elegant Serif</option>
+      <option value="Arial, sans-serif">Simple</option>
+      <option value="cursive">Handwritten</option>
+      <option value="Impact, sans-serif">Bold</option>
+      <option value="'Courier New', monospace">Typewriter</option>
+    </select>
+
+    <label>Text size</label>
+    <input type="range" id="size"
+      min="12" max="64" value="30">
+
+    <label>Text color</label>
+    <input type="color" id="color" value="#ffffff">
+
+    <label>Text alignment</label>
+    <select id="alignment">
+      <option value="center">Center</option>
+      <option value="left">Left</option>
+      <option value="right">Right</option>
+    </select>
+
+    <label>Text box width</label>
+    <input type="range" id="width"
+      min="25" max="100" value="82">
+
+    <button id="centerButton">Center Text</button>
+    <button id="resetButton">Reset Position</button>
+    <button id="exportButton">Export PNG</button>
+
+    <p style="font-size:12px;color:#aaa">
+      Drag the quote directly on the preview to position it.
+    </p>
+  </section>
+
+  <section class="preview">
+    <h2>Live Preview · 9:16</h2>
+
+    <div id="stage">
+      <img id="background" alt="">
+      <div id="shade"></div>
+      <div id="quote">Some feelings
+are too deep
+for words.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const stage = $("stage");
+const quote = $("quote");
+const background = $("background");
+const shade = $("shade");
+
+let x = 50;
+let y = 50;
+let dragging = false;
+let offsetX = 0;
+let offsetY = 0;
+let pointerId = null;
+let imageURL = null;
+
+function update() {
+  quote.textContent = $("textInput").value;
+  quote.style.fontFamily = $("font").value;
+  quote.style.fontSize = $("size").value + "px";
+  quote.style.color = $("color").value;
+  quote.style.textAlign = $("alignment").value;
+  quote.style.width = $("width").value + "%";
+
+  quote.style.left = x + "%";
+  quote.style.top = y + "%";
+
+  shade.style.background =
+    `rgba(0,0,0,${$("darkness").value / 100})`;
+}
+
+[
+  "textInput", "font", "size", "color",
+  "alignment", "width", "darkness"
+].forEach(id => {
+  $(id).addEventListener("input", update);
+});
+
+$("imageInput").addEventListener("change", event => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (imageURL) URL.revokeObjectURL(imageURL);
+
+  imageURL = URL.createObjectURL(file);
+  background.src = imageURL;
+  background.style.display = "block";
+});
+
+function startDrag(event) {
+  event.preventDefault();
+
+  const rect = stage.getBoundingClientRect();
+
+  offsetX = event.clientX -
+    (x / 100 * rect.width);
+  offsetY = event.clientY -
+    (y / 100 * rect.height);
+
+  dragging = true;
+  pointerId = event.pointerId;
+
+  quote.setPointerCapture(pointerId);
+}
+
+quote.addEventListener("pointerdown", startDrag);
+
+quote.addEventListener("pointermove", event => {
+  if (!dragging || event.pointerId !== pointerId) return;
+
+  const rect = stage.getBoundingClientRect();
+
+  x = Math.max(5, Math.min(
+    95, (event.clientX - offsetX) / rect.width * 100
+  ));
+
+  y = Math.max(3, Math.min(
+    97, (event.clientY - offsetY) / rect.height * 100
+  ));
+
+  update();
+});
+
+function stopDrag() {
+  dragging = false;
+  pointerId = null;
+}
+
+quote.addEventListener("pointerup", stopDrag);
+quote.addEventListener("pointercancel", stopDrag);
+
+$("centerButton").onclick = () => {
+  x = 50;
+  y = 50;
+  update();
+};
+
+$("resetButton").onclick = () => {
+  x = 50;
+  y = 50;
+  update();
+};
+
+$("exportButton").onclick = async () => {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1920;
+
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width;
+  const H = canvas.height;
+
+  ctx.fillStyle = "#292a30";
+  ctx.fillRect(0, 0, W, H);
+
+  if (background.style.display !== "none" &&
+      background.src) {
+    try {
+      await background.decode();
+
+      const scale = Math.max(
+        W / background.naturalWidth,
+        H / background.naturalHeight
+      );
+
+      const w = background.naturalWidth * scale;
+      const h = background.naturalHeight * scale;
+
+      ctx.drawImage(
+        background, (W - w) / 2, (H - h) / 2, w, h
+      );
+    } catch (error) {
+      alert("Could not load the background image.");
+      return;
+    }
+  }
+
+  ctx.fillStyle =
+    `rgba(0,0,0,${$("darkness").value / 100})`;
+  ctx.fillRect(0, 0, W, H);
+
+  const fontSize = Number($("size").value) * 2;
+  const maxWidth = W * Number($("width").value) / 100;
+  const text = $("textInput").value;
+
+  ctx.font = `bold ${fontSize}px ${$("font").value}`;
+  ctx.fillStyle = $("color").value;
+  ctx.textAlign = $("alignment").value;
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = "#000";
+  ctx.shadowBlur = 18;
+  ctx.shadowOffsetY = 3;
+
+  const lines = [];
+
+  text.split("\n").forEach(paragraph => {
+    if (!paragraph) {
+      lines.push("");
+      return;
+    }
+
+    let line = "";
+
+    paragraph.split(/\s+/).forEach(word => {
+      const test = line ? line + " " + word : word;
+
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    });
+
+    lines.push(line);
+  });
+
+  const lineHeight = fontSize * 1.2;
+  const totalHeight = lines.length * lineHeight;
+  const centerX = x / 100 * W;
+  let currentY = y / 100 * H - totalHeight / 2
+    + lineHeight / 2;
+
+  lines.forEach(line => {
+    let textX = centerX;
+
+    if ($("alignment").value === "left") {
+      textX -= maxWidth / 2;
+    } else if ($("alignment").value === "right") {
+      textX += maxWidth / 2;
+    }
+
+    if (line) ctx.fillText(line, textX, currentY, maxWidth);
+    currentY += lineHeight;
+  });
+
+  canvas.toBlob(blob => {
+    if (!blob) {
+      alert("PNG export failed.");
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "my-quote-reel.png";
+    link.click();
+
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }, "image/png");
+};
+
+update();
+</script>
+
+</body>
+</html>
