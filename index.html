@@ -1,432 +1,208 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quote Reel Studio</title>
+<title>Quote Reel Studio — Multi Text</title>
 <style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #101114;
-  color: white;
-}
-
-header {
-  padding: 16px;
-  text-align: center;
-  border-bottom: 1px solid #333;
-}
-
-.app {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 20px;
-  padding: 20px;
-  max-width: 1100px;
-  margin: auto;
-}
-
-.panel {
-  background: #1b1d23;
-  padding: 16px;
-  border-radius: 12px;
-}
-
-h2 {
-  font-size: 15px;
-  color: #c9a7ff;
-}
-
-label {
-  display: block;
-  margin: 12px 0 6px;
-  font-size: 13px;
-}
-
-textarea, select, input {
-  width: 100%;
-  padding: 9px;
-  border-radius: 7px;
-  border: 1px solid #444;
-  background: #111218;
-  color: white;
-}
-
-input[type="range"] {
-  padding: 0;
-}
-
-input[type="color"] {
-  height: 40px;
-}
-
-button {
-  margin-top: 12px;
-  padding: 11px;
-  border: none;
-  border-radius: 8px;
-  background: #c9a7ff;
-  color: #17121f;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:hover { opacity: .85; }
-
-.preview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-
-#stage {
-  width: min(100%, 405px);
-  aspect-ratio: 9 / 16;
-  position: relative;
-  overflow: hidden;
-  background: #292a30;
-  border: 1px solid #555;
-  border-radius: 10px;
-  touch-action: none;
-}
-
-#background {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: none;
-  pointer-events: none;
-}
-
-#shade {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,.2);
-  pointer-events: none;
-}
-
-#quote {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 82%;
-  font-family: Georgia, serif;
-  font-weight: bold;
-  font-size: 30px;
-  line-height: 1.2;
-  text-align: center;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  color: white;
-  text-shadow: 0 2px 10px #000;
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-}
-
-@media (max-width: 700px) {
-  .app { grid-template-columns: 1fr; padding: 10px; }
-  #stage { width: min(100%, 360px); }
-}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#101114;color:#fff}
+header{padding:16px;text-align:center;border-bottom:1px solid #333}
+header h1{margin:0 0 6px} header p{margin:0;color:#aaa}
+.app{display:grid;grid-template-columns:340px minmax(0,1fr);gap:20px;padding:20px;max-width:1200px;margin:auto}
+.panel{background:#1b1d23;padding:16px;border-radius:12px;align-self:start}
+h2{font-size:15px;color:#c9a7ff;margin:8px 0 12px}
+label{display:block;margin:12px 0 6px;font-size:13px;color:#ddd}
+textarea,select,input{width:100%;padding:9px;border-radius:7px;border:1px solid #444;background:#111218;color:white}
+input[type=range]{padding:0} input[type=color]{height:40px;padding:3px}
+button{margin:5px 4px 0 0;padding:10px 12px;border:0;border-radius:8px;background:#c9a7ff;color:#17121f;font-weight:bold;cursor:pointer}
+button:hover{opacity:.86}
+button.secondary{background:#30333d;color:#fff;border:1px solid #484b56}
+button.danger{background:#6b2933;color:#fff}
+.btnrow{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.layer-list{display:flex;flex-direction:column;gap:7px;margin:10px 0}
+.layer-item{display:flex;align-items:center;gap:8px;padding:9px;background:#111218;border:1px solid #3d404a;border-radius:8px;cursor:pointer}
+.layer-item.active{border-color:#c9a7ff;background:#292333}
+.layer-item .layer-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.layer-item .mini{font-size:11px;color:#aaa}
+.preview{display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0}
+#stage{width:min(100%,405px);aspect-ratio:9/16;position:relative;overflow:hidden;background:#292a30;border:1px solid #555;border-radius:10px;touch-action:none}
+#background{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;pointer-events:none}
+#shade{position:absolute;inset:0;background:rgba(0,0,0,.2);pointer-events:none}
+.text-layer{position:absolute;transform:translate(-50%,-50%);font-weight:bold;line-height:1.2;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;text-shadow:0 2px 10px #000;cursor:grab;touch-action:none;user-select:none;min-height:1em;padding:3px}
+.text-layer.selected{outline:1px dashed #c9a7ff;outline-offset:3px}
+.help{font-size:12px;color:#aaa;line-height:1.5}
+.small{font-size:12px;color:#aaa}
+@media(max-width:760px){.app{grid-template-columns:1fr;padding:10px}.preview{grid-row:1}#stage{width:min(100%,360px)}}
 </style>
 </head>
 <body>
-
-<header>
-  <h1>Quote Reel Studio</h1>
-  <p>Create your own Instagram quote designs</p>
-</header>
-
+<header><h1>Quote Reel Studio</h1><p>Create your own Instagram quote designs</p></header>
 <div class="app">
-  <section class="panel">
-    <h2>Background Image</h2>
+<section class="panel">
+  <h2>Background Image</h2>
+  <label for="imageInput">Upload your image</label><input type="file" id="imageInput" accept="image/*">
+  <label for="darkness">Background darkness</label><input type="range" id="darkness" min="0" max="80" value="20">
 
-    <label>Upload your image</label>
-    <input type="file" id="imageInput" accept="image/*">
+  <h2 style="margin-top:22px">Text Layers</h2>
+  <div id="layerList" class="layer-list"></div>
+  <div class="btnrow">
+    <button id="addTextButton">＋ Add Text</button>
+    <button id="duplicateButton" class="secondary">Duplicate</button>
+    <button id="deleteButton" class="danger">Delete Selected</button>
+  </div>
 
-    <label>Background darkness</label>
-    <input type="range" id="darkness"
-      min="0" max="80" value="20">
-
-    <h2>Your Quote</h2>
-
-    <label>Write your text</label>
-    <textarea id="textInput" rows="5">Some feelings
-are too deep
-for words.</textarea>
-
-    <label>Font</label>
-    <select id="font">
-      <option value="Georgia, serif">Elegant Serif</option>
-      <option value="Arial, sans-serif">Simple</option>
-      <option value="cursive">Handwritten</option>
-      <option value="Impact, sans-serif">Bold</option>
+  <div id="editor">
+    <h2 style="margin-top:22px">Edit Selected Text</h2>
+    <label for="textInput">Text content</label><textarea id="textInput" rows="4"></textarea>
+    <label for="font">Font</label><select id="font">
+      <option value="Georgia, serif">Elegant Serif</option><option value="Arial, sans-serif">Simple</option>
+      <option value="cursive">Handwritten</option><option value="Impact, sans-serif">Bold</option>
       <option value="'Courier New', monospace">Typewriter</option>
     </select>
-
-    <label>Text size</label>
-    <input type="range" id="size"
-      min="12" max="64" value="30">
-
-    <label>Text color</label>
-    <input type="color" id="color" value="#ffffff">
-
-    <label>Text alignment</label>
-    <select id="alignment">
-      <option value="center">Center</option>
-      <option value="left">Left</option>
-      <option value="right">Right</option>
+    <label for="size">Text size</label><input type="range" id="size" min="12" max="64" value="30">
+    <label for="color">Text color</label><input type="color" id="color" value="#ffffff">
+    <label for="alignment">Text alignment</label><select id="alignment">
+      <option value="center">Center</option><option value="left">Left</option><option value="right">Right</option>
     </select>
-
-    <label>Text box width</label>
-    <input type="range" id="width"
-      min="25" max="100" value="82">
-
-    <button id="centerButton">Center Text</button>
-    <button id="resetButton">Reset Position</button>
-    <button id="exportButton">Export PNG</button>
-
-    <p style="font-size:12px;color:#aaa">
-      Drag the quote directly on the preview to position it.
-    </p>
-  </section>
-
-  <section class="preview">
-    <h2>Live Preview · 9:16</h2>
-
-    <div id="stage">
-      <img id="background" alt="">
-      <div id="shade"></div>
-      <div id="quote">Some feelings
-are too deep
-for words.</div>
+    <label for="width">Text box width</label><input type="range" id="width" min="25" max="100" value="82">
+    <label for="layerX">Horizontal position</label><input type="range" id="layerX" min="3" max="97" value="50">
+    <label for="layerY">Vertical position</label><input type="range" id="layerY" min="3" max="97" value="50">
+    <div class="btnrow">
+      <button id="centerButton" class="secondary">Center Text</button>
+      <button id="topButton" class="secondary">Move to Top</button>
+      <button id="bottomButton" class="secondary">Move to Bottom</button>
     </div>
-  </section>
+  </div>
+  <hr style="border-color:#333;margin:20px 0">
+  <button id="exportButton" style="width:100%">Export PNG</button>
+  <p class="help">Tap a text layer in the preview or layer list to select it. Drag each layer independently. Use “＋ Add Text” to create separate top, middle, or bottom text.</p>
+</section>
+<section class="preview">
+  <h2>Live Preview · 9:16</h2>
+  <div id="stage"><img id="background" alt=""><div id="shade"></div></div>
+  <p class="small">The purple outline shows the selected layer and won't appear in your export.</p>
+</section>
 </div>
-
 <script>
 const $ = id => document.getElementById(id);
+const stage=$("stage"), background=$("background"), shade=$("shade");
+let layers=[], selectedId=null, nextId=1, imageURL=null, drag=null;
 
-const stage = $("stage");
-const quote = $("quote");
-const background = $("background");
-const shade = $("shade");
-
-let x = 50;
-let y = 50;
-let dragging = false;
-let offsetX = 0;
-let offsetY = 0;
-let pointerId = null;
-let imageURL = null;
-
-function update() {
-  quote.textContent = $("textInput").value;
-  quote.style.fontFamily = $("font").value;
-  quote.style.fontSize = $("size").value + "px";
-  quote.style.color = $("color").value;
-  quote.style.textAlign = $("alignment").value;
-  quote.style.width = $("width").value + "%";
-
-  quote.style.left = x + "%";
-  quote.style.top = y + "%";
-
-  shade.style.background =
-    `rgba(0,0,0,${$("darkness").value / 100})`;
+const defaults=()=>({id:nextId++,text:"Your text here",font:"Georgia, serif",size:30,color:"#ffffff",alignment:"center",width:82,x:50,y:50});
+function selected(){return layers.find(l=>l.id===selectedId)}
+function addLayer(data){
+  const l={...defaults(),...data,id:nextId++};
+  layers.push(l); selectedId=l.id; renderAll(); return l;
 }
-
-[
-  "textInput", "font", "size", "color",
-  "alignment", "width", "darkness"
-].forEach(id => {
-  $(id).addEventListener("input", update);
-});
-
-$("imageInput").addEventListener("change", event => {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  if (imageURL) URL.revokeObjectURL(imageURL);
-
-  imageURL = URL.createObjectURL(file);
-  background.src = imageURL;
-  background.style.display = "block";
-});
-
-function startDrag(event) {
-  event.preventDefault();
-
-  const rect = stage.getBoundingClientRect();
-
-  offsetX = event.clientX -
-    (x / 100 * rect.width);
-  offsetY = event.clientY -
-    (y / 100 * rect.height);
-
-  dragging = true;
-  pointerId = event.pointerId;
-
-  quote.setPointerCapture(pointerId);
-}
-
-quote.addEventListener("pointerdown", startDrag);
-
-quote.addEventListener("pointermove", event => {
-  if (!dragging || event.pointerId !== pointerId) return;
-
-  const rect = stage.getBoundingClientRect();
-
-  x = Math.max(5, Math.min(
-    95, (event.clientX - offsetX) / rect.width * 100
-  ));
-
-  y = Math.max(3, Math.min(
-    97, (event.clientY - offsetY) / rect.height * 100
-  ));
-
-  update();
-});
-
-function stopDrag() {
-  dragging = false;
-  pointerId = null;
-}
-
-quote.addEventListener("pointerup", stopDrag);
-quote.addEventListener("pointercancel", stopDrag);
-
-$("centerButton").onclick = () => {
-  x = 50;
-  y = 50;
-  update();
-};
-
-$("resetButton").onclick = () => {
-  x = 50;
-  y = 50;
-  update();
-};
-
-$("exportButton").onclick = async () => {
-  const canvas = document.createElement("canvas");
-  canvas.width = 1080;
-  canvas.height = 1920;
-
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width;
-  const H = canvas.height;
-
-  ctx.fillStyle = "#292a30";
-  ctx.fillRect(0, 0, W, H);
-
-  if (background.style.display !== "none" &&
-      background.src) {
-    try {
-      await background.decode();
-
-      const scale = Math.max(
-        W / background.naturalWidth,
-        H / background.naturalHeight
-      );
-
-      const w = background.naturalWidth * scale;
-      const h = background.naturalHeight * scale;
-
-      ctx.drawImage(
-        background, (W - w) / 2, (H - h) / 2, w, h
-      );
-    } catch (error) {
-      alert("Could not load the background image.");
-      return;
-    }
+function renderLayer(l){
+  let el=stage.querySelector(`[data-layer-id="${l.id}"]`);
+  if(!el){el=document.createElement("div");el.className="text-layer";el.dataset.layerId=l.id;stage.appendChild(el);
+    el.addEventListener("pointerdown",startDrag);
   }
-
-  ctx.fillStyle =
-    `rgba(0,0,0,${$("darkness").value / 100})`;
-  ctx.fillRect(0, 0, W, H);
-
-  const fontSize = Number($("size").value) * 2;
-  const maxWidth = W * Number($("width").value) / 100;
-  const text = $("textInput").value;
-
-  ctx.font = `bold ${fontSize}px ${$("font").value}`;
-  ctx.fillStyle = $("color").value;
-  ctx.textAlign = $("alignment").value;
-  ctx.textBaseline = "middle";
-  ctx.shadowColor = "#000";
-  ctx.shadowBlur = 18;
-  ctx.shadowOffsetY = 3;
-
-  const lines = [];
-
-  text.split("\n").forEach(paragraph => {
-    if (!paragraph) {
-      lines.push("");
-      return;
-    }
-
-    let line = "";
-
-    paragraph.split(/\s+/).forEach(word => {
-      const test = line ? line + " " + word : word;
-
-      if (ctx.measureText(test).width > maxWidth && line) {
-        lines.push(line);
-        line = word;
-      } else {
-        line = test;
-      }
-    });
-
-    lines.push(line);
+  el.textContent=l.text;el.style.fontFamily=l.font;el.style.fontSize=l.size+"px";el.style.color=l.color;
+  el.style.textAlign=l.alignment;el.style.width=l.width+"%";el.style.left=l.x+"%";el.style.top=l.y+"%";
+  el.classList.toggle("selected",l.id===selectedId);
+}
+function renderAll(){
+  [...stage.querySelectorAll(".text-layer")].forEach(el=>{if(!layers.some(l=>String(l.id)===el.dataset.layerId))el.remove()});
+  layers.forEach(renderLayer);renderList();loadEditor();
+}
+function renderList(){
+  const list=$("layerList");list.innerHTML="";
+  layers.slice().reverse().forEach(l=>{
+    const item=document.createElement("div");item.className="layer-item"+(l.id===selectedId?" active":"");
+    const name=document.createElement("span");name.className="layer-name";name.textContent=l.text.trim().split("\n")[0]||"(Empty text)";
+    const mini=document.createElement("span");mini.className="mini";mini.textContent=`${Math.round(l.x)}%, ${Math.round(l.y)}%`;
+    item.append(name,mini);item.onclick=()=>{selectedId=l.id;renderAll()};list.appendChild(item);
   });
+}
+function loadEditor(){
+  const l=selected();$("editor").style.opacity=l?"1":".45";
+  ["textInput","font","size","color","alignment","width","layerX","layerY"].forEach(id=>$(id).disabled=!l);
+  ["centerButton","topButton","bottomButton","duplicateButton","deleteButton"].forEach(id=>$(id).disabled=!l);
+  if(!l){$("textInput").value="";return}
+  $("textInput").value=l.text;$("font").value=l.font;$("size").value=l.size;$("color").value=l.color;
+  $("alignment").value=l.alignment;$("width").value=l.width;$("layerX").value=l.x;$("layerY").value=l.y;
+}
+function syncEditor(){
+  const l=selected();if(!l)return;
+  l.text=$("textInput").value;l.font=$("font").value;l.size=Number($("size").value);
+  l.color=$("color").value;l.alignment=$("alignment").value;l.width=Number($("width").value);
+  l.x=Number($("layerX").value);l.y=Number($("layerY").value);renderAll();
+}
+["textInput","font","size","color","alignment","width","layerX","layerY"].forEach(id=>$(id).addEventListener("input",syncEditor));
+$("darkness").addEventListener("input",()=>shade.style.background=`rgba(0,0,0,${$("darkness").value/100})`);
+$("addTextButton").onclick=()=>addLayer({text:"New text",x:50,y:50});
+$("duplicateButton").onclick=()=>{const l=selected();if(l)addLayer({...l,x:Math.min(95,l.x+4),y:Math.min(97,l.y+5)})};
+$("deleteButton").onclick=()=>{if(!selected())return;layers=layers.filter(l=>l.id!==selectedId);selectedId=layers.length?layers[layers.length-1].id:null;renderAll()};
+$("centerButton").onclick=()=>moveSelected(50,50);
+$("topButton").onclick=()=>moveSelected(50,12);
+$("bottomButton").onclick=()=>moveSelected(50,88);
+function moveSelected(x,y){const l=selected();if(!l)return;l.x=x;l.y=y;renderAll()}
+$("imageInput").addEventListener("change",e=>{const file=e.target.files[0];if(!file)return;if(imageURL)URL.revokeObjectURL(imageURL);imageURL=URL.createObjectURL(file);background.src=imageURL;background.style.display="block"});
+function startDrag(e){
+  const el=e.currentTarget,l=layers.find(a=>a.id===Number(el.dataset.layerId));if(!l)return;
+  e.preventDefault();selectedId=l.id;
+  const rect=stage.getBoundingClientRect();drag={id:l.id,pointerId:e.pointerId,dx:e.clientX-(l.x/100*rect.width),dy:e.clientY-(l.y/100*rect.height)};
+  el.setPointerCapture(e.pointerId);renderAll();
+}
+stage.addEventListener("pointermove",e=>{
+  if(!drag||e.pointerId!==drag.pointerId)return;
+  const l=layers.find(a=>a.id===drag.id);if(!l)return;
+  const r=stage.getBoundingClientRect();
+  l.x=Math.max(3,Math.min(97,(e.clientX-drag.dx)/r.width*100));
+  l.y=Math.max(3,Math.min(97,(e.clientY-drag.dy)/r.height*100));
+  const el=stage.querySelector(`[data-layer-id="${l.id}"]`);
+  if(el){el.style.left=l.x+"%";el.style.top=l.y+"%"}
+  $("layerX").value=l.x;$("layerY").value=l.y;renderList();
+});
+function stopDrag(e){if(drag&&e.pointerId===drag.pointerId){drag=null;renderAll()}}
+stage.addEventListener("pointerup",stopDrag);stage.addEventListener("pointercancel",stopDrag);
 
-  const lineHeight = fontSize * 1.2;
-  const totalHeight = lines.length * lineHeight;
-  const centerX = x / 100 * W;
-  let currentY = y / 100 * H - totalHeight / 2
-    + lineHeight / 2;
-
-  lines.forEach(line => {
-    let textX = centerX;
-
-    if ($("alignment").value === "left") {
-      textX -= maxWidth / 2;
-    } else if ($("alignment").value === "right") {
-      textX += maxWidth / 2;
-    }
-
-    if (line) ctx.fillText(line, textX, currentY, maxWidth);
-    currentY += lineHeight;
-  });
-
-  canvas.toBlob(blob => {
-    if (!blob) {
-      alert("PNG export failed.");
-      return;
-    }
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = "my-quote-reel.png";
-    link.click();
-
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }, "image/png");
+function fontForCanvas(l,scale){return `bold ${l.size*scale}px ${l.font}`}
+function wrapLines(ctx,text,maxWidth){
+  const out=[];
+  text.split("\n").forEach(p=>{
+    if(p===""){out.push("");return}
+    let line="";
+    p.split(/\s+/).forEach(word=>{
+      let test=line?line+" "+word:word;
+      if(ctx.measureText(test).width>maxWidth&&line){out.push(line);line=word}else line=test;
+    });out.push(line);
+  });return out;
+}
+function drawLayer(ctx,l,W,H){
+  const scale=W/stage.clientWidth;
+  const fontSize=l.size*scale,maxWidth=W*l.width/100;
+  ctx.save();ctx.font=fontForCanvas(l,scale);ctx.fillStyle=l.color;ctx.textAlign=l.alignment;ctx.textBaseline="middle";
+  ctx.shadowColor="#000";ctx.shadowBlur=18*scale;ctx.shadowOffsetY=3*scale;
+  const lines=wrapLines(ctx,l.text,maxWidth),lineHeight=fontSize*1.2,totalHeight=lines.length*lineHeight;
+  const cx=l.x/100*W;let cy=l.y/100*H-totalHeight/2+lineHeight/2;
+  lines.forEach(line=>{
+    let tx=cx;if(l.alignment==="left")tx-=maxWidth/2;else if(l.alignment==="right")tx+=maxWidth/2;
+    if(line)ctx.fillText(line,tx,cy,maxWidth);cy+=lineHeight;
+  });ctx.restore();
+}
+$("exportButton").onclick=async()=>{
+  const canvas=document.createElement("canvas");canvas.width=1080;canvas.height=1920;
+  const ctx=canvas.getContext("2d"),W=canvas.width,H=canvas.height;
+  ctx.fillStyle="#292a30";ctx.fillRect(0,0,W,H);
+  if(background.style.display!=="none"&&background.src){
+    try{await background.decode();const scale=Math.max(W/background.naturalWidth,H/background.naturalHeight);
+      const w=background.naturalWidth*scale,h=background.naturalHeight*scale;
+      ctx.drawImage(background,(W-w)/2,(H-h)/2,w,h);
+    }catch(err){alert("Could not load the background image.");return}
+  }
+  ctx.fillStyle=`rgba(0,0,0,${$("darkness").value/100})`;ctx.fillRect(0,0,W,H);
+  layers.forEach(l=>drawLayer(ctx,l,W,H));
+  canvas.toBlob(blob=>{
+    if(!blob){alert("PNG export failed.");return}
+    const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="my-quote-reel.png";a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  },"image/png");
 };
-
-update();
+shade.style.background="rgba(0,0,0,.2)";
+addLayer({text:"Some feelings\nare too deep\nfor words.",x:50,y:50,size:30,width:82});
 </script>
-
 </body>
 </html>
